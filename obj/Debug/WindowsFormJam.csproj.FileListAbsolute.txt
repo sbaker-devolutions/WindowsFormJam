@@ -1,0 +1,9 @@
+c:\users\baker\documents\visual studio 2015\Projects\WindowsFormJam\WindowsFormJam\bin\Debug\WindowsFormJam.exe.config
+c:\users\baker\documents\visual studio 2015\Projects\WindowsFormJam\WindowsFormJam\obj\Debug\WindowsFormJam.csprojResolveAssemblyReference.cache
+c:\users\baker\documents\visual studio 2015\Projects\WindowsFormJam\WindowsFormJam\obj\Debug\WindowsFormJam.frmGame.resources
+c:\users\baker\documents\visual studio 2015\Projects\WindowsFormJam\WindowsFormJam\obj\Debug\WindowsFormJam.Properties.Resources.resources
+c:\users\baker\documents\visual studio 2015\Projects\WindowsFormJam\WindowsFormJam\obj\Debug\WindowsFormJam.csproj.GenerateResource.Cache
+c:\users\baker\documents\visual studio 2015\Projects\WindowsFormJam\WindowsFormJam\bin\Debug\WindowsFormJam.exe
+c:\users\baker\documents\visual studio 2015\Projects\WindowsFormJam\WindowsFormJam\bin\Debug\WindowsFormJam.pdb
+c:\users\baker\documents\visual studio 2015\Projects\WindowsFormJam\WindowsFormJam\obj\Debug\WindowsFormJam.exe
+c:\users\baker\documents\visual studio 2015\Projects\WindowsFormJam\WindowsFormJam\obj\Debug\WindowsFormJam.pdb
