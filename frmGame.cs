@@ -20,7 +20,10 @@ namespace WindowsFormJam
         {
             InitializeComponent();
             game = new Game(this);
-            GameScreen.BackgroundImage = game.Render();
+            RefreshFrame(game.Render());
+
+            pgbExp.Style = ProgressBarStyle.Continuous;
+            pgbExp.ForeColor = Color.FromArgb(6030325);
             
         }
 
@@ -33,6 +36,20 @@ namespace WindowsFormJam
         private void RefreshFrame(Image image)
         {
             GameScreen.BackgroundImage = image;
+
+            lstCharSheet.Items.Clear();
+            ListViewItem rowFloor = new ListViewItem("Floor");
+            rowFloor.SubItems.Add(game.Floor.ToString());
+            ListViewItem rowHP = new ListViewItem("HP");
+            rowHP.SubItems.Add((game.Player.HP + "/" + game.Player.MaxHP).ToString());
+            ListViewItem rowLvl = new ListViewItem("Floor");
+            rowLvl.SubItems.Add(game.Player.Level.ToString());
+            ListViewItem rowExp = new ListViewItem("Exp");
+            rowExp.SubItems.Add((game.Player.CurrentExp + "/" + game.Player.NextExp).ToString());
+            pgbExp.Maximum = game.Player.NextExp;
+            pgbExp.Value = game.Player.CurrentExp;
+
+            lstCharSheet.Items.AddRange(new ListViewItem[] { rowFloor, rowHP, rowLvl, rowExp });
         }
 
         private void frmGame_KeyPress(object sender, KeyPressEventArgs e)

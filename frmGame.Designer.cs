@@ -32,6 +32,7 @@
             this.lstCharSheet = new System.Windows.Forms.ListView();
             this.colTrait = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.colValue = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.pgbExp = new System.Windows.Forms.ProgressBar();
             ((System.ComponentModel.ISupportInitialize)(this.GameScreen)).BeginInit();
             this.SuspendLayout();
             // 
@@ -50,7 +51,7 @@
             this.colValue});
             this.lstCharSheet.Location = new System.Drawing.Point(530, 12);
             this.lstCharSheet.Name = "lstCharSheet";
-            this.lstCharSheet.Size = new System.Drawing.Size(187, 197);
+            this.lstCharSheet.Size = new System.Drawing.Size(242, 197);
             this.lstCharSheet.TabIndex = 1;
             this.lstCharSheet.UseCompatibleStateImageBehavior = false;
             this.lstCharSheet.View = System.Windows.Forms.View.Details;
@@ -64,13 +65,21 @@
             // colValue
             // 
             this.colValue.Text = "Value";
-            this.colValue.Width = 102;
+            this.colValue.Width = 157;
+            // 
+            // pgbExp
+            // 
+            this.pgbExp.Location = new System.Drawing.Point(530, 215);
+            this.pgbExp.Name = "pgbExp";
+            this.pgbExp.Size = new System.Drawing.Size(242, 23);
+            this.pgbExp.TabIndex = 2;
             // 
             // frmGame
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(784, 562);
+            this.Controls.Add(this.pgbExp);
             this.Controls.Add(this.lstCharSheet);
             this.Controls.Add(this.GameScreen);
             this.KeyPreview = true;
@@ -88,6 +97,7 @@
         private System.Windows.Forms.ListView lstCharSheet;
         private System.Windows.Forms.ColumnHeader colTrait;
         private System.Windows.Forms.ColumnHeader colValue;
+        private System.Windows.Forms.ProgressBar pgbExp;
     }
 }
 
