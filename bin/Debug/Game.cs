@@ -11,6 +11,7 @@ namespace WindowsFormJam
 {
     public class Game
     {
+        public static Game Instance; 
         private const int NBTILE = 16;
         private frmGame gameForm;
         public Player Player { get; private set; }
@@ -33,6 +34,9 @@ namespace WindowsFormJam
         {
             Bitmap frame = new Bitmap(512, 512);
             Graphics g;
+
+            int TileWidth = (frame.Width / NBTILE);
+            int TileHeight = (frame.Height / NBTILE);
 
             g = Graphics.FromImage(frame);
             g.Clear(Color.Black);
@@ -68,10 +72,18 @@ namespace WindowsFormJam
 
             }
 
+            Pen penHp = new Pen(Color.Red, 3);
             for (int i = 0; i < mobs.Count; i++)
             {
+                int red = mobs[i].MaxHP - mobs[i].CurrentHP;
+                red = mobs[i].CurrentHP * 255 / mobs[i].MaxHP;
+                penHp.Color = Color.FromArgb(255-red, red, 0);
+                int lifebar = mobs[i].X * TileWidth + mobs[i].CurrentHP * 32 / mobs[i].MaxHP;
+
                 Image image = (Image)Properties.Resources.ResourceManager.GetObject(mobs[i].Name);
-                g.DrawImage(image, new Rectangle(mobs[i].X * (frame.Width / NBTILE), mobs[i].Y * (frame.Height / NBTILE), frame.Width / NBTILE, frame.Height / NBTILE));
+                g.DrawImage(image, new Rectangle(mobs[i].X * TileWidth, mobs[i].Y * TileHeight, TileWidth, TileHeight));
+                g.DrawLine(penHp, new Point(mobs[i].X * TileWidth, mobs[i].Y * TileHeight + TileWidth - 2), 
+                    new Point(lifebar, mobs[i].Y * TileHeight + TileWidth - 2));
             }
 
             //g.FillRectangle(character, new Rectangle(Player.X * (frame.Width / NBTILE), Player.Y * (frame.Height / NBTILE), frame.Width / NBTILE, frame.Height / NBTILE));
@@ -153,7 +165,7 @@ namespace WindowsFormJam
             
             for (int i = 0; i < nbMob; i++)
             {
-                mobs.Add(new Mob("Bat", 5, rng.Next(2, 15), rng.Next(2, 15), 1));
+                mobs.Add(new Mob("Bat", 5, 1, rng.Next(2, 15), rng.Next(2, 15), 1, 2, 1));
             }
         }
 
@@ -189,10 +201,34 @@ namespace WindowsFormJam
                     Player.Spawn(currentMap);
                     break;
                 case 'f':
-                    Player.X = newX;
-                    Player.Y = newY;
+                    int combat = -1;
+                    for (int i = 0; i < mobs.Count; i++)
+                    {
+                        if (mobs[i].X == newX && mobs[i].Y == newY)
+                        {
+                            combat = i;
+                        }
+                    }
+                    if (combat == -1)
+                    {
+                        Player.X = newX;
+                        Player.Y = newY;
+                    }
+                    else
+                    {
+                        Battle(mobs[combat]);
+                    }
                     break;
             }
+        }
+
+        private void Battle(Mob mob)
+        {
+            if(mob.TakeDmg(1, Player))
+            {
+                mobs.Remove(mob);
+            }
+            Player.TakeDmg(mob.Attack);
         }
 
         private Bitmap ResizeBitmap(Bitmap source, int width, int height)

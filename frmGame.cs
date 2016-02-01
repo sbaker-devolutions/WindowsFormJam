@@ -42,14 +42,16 @@ namespace WindowsFormJam
             rowFloor.SubItems.Add(game.Floor.ToString());
             ListViewItem rowHP = new ListViewItem("HP");
             rowHP.SubItems.Add((game.Player.HP + "/" + game.Player.MaxHP).ToString());
-            ListViewItem rowLvl = new ListViewItem("Floor");
+            ListViewItem rowLvl = new ListViewItem("Level");
             rowLvl.SubItems.Add(game.Player.Level.ToString());
             ListViewItem rowExp = new ListViewItem("Exp");
             rowExp.SubItems.Add((game.Player.CurrentExp + "/" + game.Player.NextExp).ToString());
+            ListViewItem rowGold = new ListViewItem("Gold");
+            rowGold.SubItems.Add((game.Player.Gold).ToString());
             pgbExp.Maximum = game.Player.NextExp;
             pgbExp.Value = game.Player.CurrentExp;
 
-            lstCharSheet.Items.AddRange(new ListViewItem[] { rowFloor, rowHP, rowLvl, rowExp });
+            lstCharSheet.Items.AddRange(new ListViewItem[] { rowFloor, rowHP, rowLvl, rowExp, rowGold });
         }
 
         private void frmGame_KeyPress(object sender, KeyPressEventArgs e)
