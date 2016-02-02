@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,38 +9,68 @@ namespace WindowsFormJam
 {
     public class Player
     {
+        private Game game;
         public int HP { get; private set; }
         public int MaxHP { get; private set; }
         public int Level { get; protected set; }
 
         public int CurrentExp { get;  set; }
-        public int NextExp { get; private set; }
+        //public int NextExp { get; private set; }
         public int Gold { get; set; }
 
         public int X { get; set; }
         public int Y { get; set; }
 
-        public Player(int mHP, int lvl)
+        public Player(string path, Game _game)
         {
-            MaxHP = mHP;
-            HP = mHP;
-            Level = lvl;
-            CurrentExp = 0;
-            NextExp = (5 + Level) * Level;
+            string[] data;
+            try
+            {
+                using (StreamReader reader = new StreamReader(path))
+                {
+                    data = reader.ReadToEnd().Split(';');
+                }
+                game = _game;
+                MaxHP = int.Parse(data[0]);
+                HP = MaxHP;
+                Level = int.Parse(data[1]);
+                CurrentExp = int.Parse(data[2]);
+                Gold = int.Parse(data[3]);
+            }
+            catch(Exception ex)
+            {
+                game = _game;
+                MaxHP = 20;
+                HP = 20;
+                Level = 1;
+                CurrentExp = 0;
+                Gold = 0;
+            }
         }
 
         public void TakeDmg(int attack)
         {
             HP -= attack;
+
+            if(HP <= 0)
+            {
+                using (StreamWriter writer = new StreamWriter(AppDomain.CurrentDomain.BaseDirectory + "Char.csv"))
+                {
+                    writer.Write(this.toString());
+                }
+                game.GameForm.DeathAnimation();
+                game.GameForm.game = new Game(game.GameForm);
+                
+            }
         }
 
         public void GetExp(int amount)
         {
-            if (CurrentExp + amount >= NextExp)
+            if (CurrentExp + amount >= (5 + Level) * Level)//NextExp)
             {
                 Level++;
-                CurrentExp = Math.Abs(CurrentExp - NextExp);
-                NextExp = (5 + Level) * Level;
+                CurrentExp = Math.Abs(CurrentExp - /*NextExp*/((5 + Level) * Level));
+                //NextExp = (5 + Level) * Level;
             }
             else
             {
@@ -60,6 +91,11 @@ namespace WindowsFormJam
                     }
                 }
             }
+        }
+
+        public string toString()
+        {
+            return MaxHP.ToString() + ";" + Level.ToString() + ";" + CurrentExp.ToString() + ";" + Gold.ToString();
         }
     }
 }

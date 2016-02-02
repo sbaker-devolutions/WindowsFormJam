@@ -13,7 +13,7 @@ namespace WindowsFormJam
 {
     public partial class frmGame : Form
     {
-        private Game game;
+        public Game game { get; set; }
         public static string path = AppDomain.CurrentDomain.BaseDirectory;
 
         public frmGame()
@@ -45,10 +45,10 @@ namespace WindowsFormJam
             ListViewItem rowLvl = new ListViewItem("Level");
             rowLvl.SubItems.Add(game.Player.Level.ToString());
             ListViewItem rowExp = new ListViewItem("Exp");
-            rowExp.SubItems.Add((game.Player.CurrentExp + "/" + game.Player.NextExp).ToString());
+            rowExp.SubItems.Add((game.Player.CurrentExp + "/" + ((5 + game.Player.Level) * game.Player.Level)).ToString());
             ListViewItem rowGold = new ListViewItem("Gold");
             rowGold.SubItems.Add((game.Player.Gold).ToString());
-            pgbExp.Maximum = game.Player.NextExp;
+            pgbExp.Maximum = ((5 + game.Player.Level) * game.Player.Level);
             pgbExp.Value = game.Player.CurrentExp;
 
             lstCharSheet.Items.AddRange(new ListViewItem[] { rowFloor, rowHP, rowLvl, rowExp, rowGold });
@@ -72,6 +72,19 @@ namespace WindowsFormJam
                     break;
             }
             RefreshFrame(game.Render());
+        }
+
+        public void DeathAnimation()
+        {
+            Bitmap frame = (Bitmap)game.Render();
+            Graphics g;
+            g = Graphics.FromImage(frame);
+
+            SolidBrush dark = new SolidBrush(Color.FromArgb(200,0,0,0));
+            g.FillRectangle(dark, new Rectangle(0, 0, GameScreen.Width, GameScreen.Height));
+            RefreshFrame(frame);
+
+            MessageBox.Show("You deaded!");
         }
     }
 

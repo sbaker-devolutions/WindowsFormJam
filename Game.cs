@@ -11,21 +11,25 @@ namespace WindowsFormJam
 {
     public class Game
     {
-        public static Game Instance; 
         private const int NBTILE = 16;
-        private frmGame gameForm;
+        public frmGame GameForm { get; private set; }
         public Player Player { get; private set; }
         private string[] maps;
         private string[] currentMap;
         private List<Mob> mobs;
         public int Floor { get; private set; }
+        private List<Mob> mobList;
+        //private List<Item> itemList;
 
         public Game(frmGame form)
         {
-            gameForm = form;
-            Player = new Player(20, 1);
+            GameForm = form;
+            Player = new Player(AppDomain.CurrentDomain.BaseDirectory + "Char.csv", this);
             Floor = 1;
+            LoadMobs();
+            //LoadItems();
             currentMap = LoadMap();
+            MobGeneration();
             Player.Spawn(currentMap);
 
         }
@@ -77,12 +81,12 @@ namespace WindowsFormJam
             {
                 int red = mobs[i].MaxHP - mobs[i].CurrentHP;
                 red = mobs[i].CurrentHP * 255 / mobs[i].MaxHP;
-                penHp.Color = Color.FromArgb(255-red, red, 0);
+                penHp.Color = Color.FromArgb(255 - red, red, 0);
                 int lifebar = mobs[i].X * TileWidth + mobs[i].CurrentHP * 32 / mobs[i].MaxHP;
 
                 Image image = (Image)Properties.Resources.ResourceManager.GetObject(mobs[i].Name);
                 g.DrawImage(image, new Rectangle(mobs[i].X * TileWidth, mobs[i].Y * TileHeight, TileWidth, TileHeight));
-                g.DrawLine(penHp, new Point(mobs[i].X * TileWidth, mobs[i].Y * TileHeight + TileWidth - 2), 
+                g.DrawLine(penHp, new Point(mobs[i].X * TileWidth, mobs[i].Y * TileHeight + TileWidth - 2),
                     new Point(lifebar, mobs[i].Y * TileHeight + TileWidth - 2));
             }
 
@@ -106,7 +110,6 @@ namespace WindowsFormJam
 
         private string[] LoadMap()
         {
-            mobs = new List<Mob>();
             if (Floor == 1)
             {
                 maps = new string[File.ReadLines(frmGame.path + "map.txt").Count()];
@@ -151,9 +154,6 @@ namespace WindowsFormJam
                     }
                 }
             }
-
-            MobGeneration();
-
             return map;
         }
 
@@ -161,11 +161,43 @@ namespace WindowsFormJam
         {
             Random rng = new Random();
             int nbMob = rng.Next(1, 5);
+            mobs = new List<Mob>();
 
-            
+            Mob mob;
             for (int i = 0; i < nbMob; i++)
             {
-                mobs.Add(new Mob("Bat", 5, 1, rng.Next(2, 15), rng.Next(2, 15), 1, 2, 1));
+                int mobId = rng.Next(0, mobList.Count);
+                mob = new Mob(mobList[mobId].Name, mobList[mobId].MaxHP, mobList[mobId].Attack, rng.Next(1, 15), rng.Next(1, 15), rng.Next(1,5), mobList[mobId].Exp, mobList[mobId].Gold);
+                bool spawn = false;
+                while (!spawn)
+                {
+                    if (currentMap[mob.X][mob.Y] == 'f')
+                    {
+                        spawn = true;
+                        for (int j = 0; j < mobs.Count; j++)
+                        {
+                            if (mob.X == mobs[j].X && mob.Y == mobs[j].Y)
+                                spawn = false;
+                        }
+                    }
+                    mob = new Mob(mobList[mobId].Name, mobList[mobId].MaxHP, mobList[mobId].Attack, rng.Next(1, 15), rng.Next(1, 15), rng.Next(1, 5), mobList[mobId].Exp, mobList[mobId].Gold);
+                }
+                mobs.Add(mob);
+            }
+        }
+
+        public void LoadMobs()
+        {
+            mobList = new List<Mob>();
+            int i = 0;
+            string line;
+            StreamReader file = new StreamReader(frmGame.path + "mob.csv");
+            while ((line = file.ReadLine()) != null)
+            {
+                string[] data = line.Split(';');
+                //Id;baseHp;Attack;baseExp;baseGold
+                mobList.Add(new Mob(data[0], int.Parse(data[1]), int.Parse(data[2]), -1, -1, 1, int.Parse(data[3]), int.Parse(data[4])));
+                i++;
             }
         }
 
@@ -198,9 +230,11 @@ namespace WindowsFormJam
                 case 's':
                     Floor++;
                     currentMap = LoadMap();
+                    MobGeneration();
                     Player.Spawn(currentMap);
                     break;
                 case 'f':
+                case 'c':
                     int combat = -1;
                     for (int i = 0; i < mobs.Count; i++)
                     {
@@ -224,7 +258,7 @@ namespace WindowsFormJam
 
         private void Battle(Mob mob)
         {
-            if(mob.TakeDmg(1, Player))
+            if (mob.TakeDmg(1, Player))
             {
                 mobs.Remove(mob);
             }
@@ -238,8 +272,5 @@ namespace WindowsFormJam
             g.DrawImage(source, 0, 0, width, height);
             return img;
         }
-
-
-
     }
 }

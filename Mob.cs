@@ -27,7 +27,7 @@ namespace WindowsFormJam
             CurrentHP = baseHP * lvl;
             MaxHP = CurrentHP;
             Exp = baseExp * lvl;
-            Attack = attack;
+            Attack = attack * lvl;
             Gold = gold;
         }
 
