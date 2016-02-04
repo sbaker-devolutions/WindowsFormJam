@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -18,20 +20,24 @@ namespace WindowsFormJam
         private string[] currentMap;
         private List<Mob> mobs;
         public int Floor { get; private set; }
-        private List<Mob> mobList;
         //private List<Item> itemList;
+        private SqlConnection conSql;
+        private SqlCommand cmdSql;
+        private SqlDataReader readerSql;
 
         public Game(frmGame form)
         {
+            conSql = new SqlConnection("Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=|DataDirectory|\\Jam.mdf;Integrated Security=True");
+            bool t = ConnectionTest();
+            DataTable d = new DataTable();
+            ExecCmd("SELECT Name, baseHP FROM Mobs", d);
             GameForm = form;
             Player = new Player(AppDomain.CurrentDomain.BaseDirectory + "Char.csv", this);
             Floor = 1;
-            LoadMobs();
             //LoadItems();
             currentMap = LoadMap();
             MobGeneration();
             Player.Spawn(currentMap);
-
         }
 
         public Image Render()
@@ -159,7 +165,7 @@ namespace WindowsFormJam
 
         public void MobGeneration()
         {
-            Random rng = new Random();
+            /*Random rng = new Random();
             int nbMob = rng.Next(1, 5);
             mobs = new List<Mob>();
 
@@ -183,22 +189,15 @@ namespace WindowsFormJam
                     mob = new Mob(mobList[mobId].Name, mobList[mobId].MaxHP, mobList[mobId].Attack, rng.Next(1, 15), rng.Next(1, 15), rng.Next(1, 5), mobList[mobId].Exp, mobList[mobId].Gold);
                 }
                 mobs.Add(mob);
-            }
-        }
 
-        public void LoadMobs()
-        {
-            mobList = new List<Mob>();
-            int i = 0;
-            string line;
-            StreamReader file = new StreamReader(frmGame.path + "mob.csv");
-            while ((line = file.ReadLine()) != null)
-            {
-                string[] data = line.Split(';');
-                //Id;baseHp;Attack;baseExp;baseGold
-                mobList.Add(new Mob(data[0], int.Parse(data[1]), int.Parse(data[2]), -1, -1, 1, int.Parse(data[3]), int.Parse(data[4])));
-                i++;
-            }
+
+            }*/
+
+            Random rng = new Random();
+            int nbMob = rng.Next(1, 5);
+            mobs = new List<Mob>();
+
+
         }
 
         public void ItemGeneration()
@@ -272,5 +271,49 @@ namespace WindowsFormJam
             g.DrawImage(source, 0, 0, width, height);
             return img;
         }
+
+        private bool ConnectionTest()
+        {
+            try
+            {
+                conSql.Open();
+                conSql.Close();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Can't connect to DB: " + ex.Message);
+                return false;
+            }
+            return true;
+        }
+
+        public bool ExecCmd(string cmd, DataTable data)
+        {
+            bool result = false;
+            try
+            {
+                cmdSql.CommandText = cmd;
+                cmdSql.CommandType = CommandType.Text;
+                cmdSql.Connection = conSql;
+                conSql.Open();
+                readerSql = cmdSql.ExecuteReader();
+                data.Load(readerSql);
+
+                readerSql.Close();
+                result = true;
+            }
+            catch (Exception ex)
+            {
+                //MessageBox.Show("error ExecPsParams: " + ex.Message);
+                result = false;
+            }
+            finally
+            {
+                conSql.Close();
+            }
+            //return result;
+            return false;
+        }
+
     }
 }
