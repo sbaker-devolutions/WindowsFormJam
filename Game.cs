@@ -11,7 +11,7 @@ using System.Windows.Forms;
 
 namespace WindowsFormJam
 {
-    public class Game
+    class Game
     {
         private const int NBTILE = 16;
         public frmGame GameForm { get; private set; }
@@ -25,12 +25,16 @@ namespace WindowsFormJam
 
         public Game(frmGame form)
         {
-            Player = new Player("a", this);
+            Weapon w = new Weapon();
+
+            var property = w.GetType().GetProperty("Str");
+
+            Player = new Player("b", 1, 1, 1, 1, 1, this);
             GameForm = form;
             if (DB.ConnectionTest())
             {
                 Floor = 1;
-                currentMap = LoadMap();
+                //currentMap = LoadMap();
                 //MobGeneration();
                 //Player.Spawn(currentMap);
             }
@@ -39,9 +43,9 @@ namespace WindowsFormJam
                 MessageBox.Show("Could not load game data.");
             }
 
-            Maze m = new Maze(16,16);
-            m.Generation();
-            currentMap = m.GetMaze();
+            //Maze m = new Maze(16,16);
+            //m.Generation();
+            //currentMap = m.GetMaze();
         }
 
         public Image Render()
@@ -100,7 +104,7 @@ namespace WindowsFormJam
                     new Point(lifebar, mobs[i].Y * TileHeight + TileWidth - 2));
             }
 
-            //g.FillRectangle(character, new Rectangle(Player.X * (frame.Width / NBTILE), Player.Y * (frame.Height / NBTILE), frame.Width / NBTILE, frame.Height / NBTILE));
+            g.FillRectangle(character, new Rectangle(Player.X * (frame.Width / NBTILE), Player.Y * (frame.Height / NBTILE), frame.Width / NBTILE, frame.Height / NBTILE));
             g.DrawImage(Properties.Resources.Char, new Rectangle(Player.X * (frame.Width / NBTILE), Player.Y * (frame.Height / NBTILE), frame.Width / NBTILE, frame.Height / NBTILE));
 
             Pen pen = new Pen(Color.White, 1);

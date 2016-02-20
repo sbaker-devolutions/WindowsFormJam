@@ -13,7 +13,7 @@ namespace WindowsFormJam
 {
     public partial class frmGame : Form
     {
-        public Game game { get; set; }
+        private Game game { get; set; }
         public static string path = AppDomain.CurrentDomain.BaseDirectory;
 
         public frmGame()
@@ -41,7 +41,7 @@ namespace WindowsFormJam
             ListViewItem rowFloor = new ListViewItem("Floor");
             rowFloor.SubItems.Add(game.Floor.ToString());
             ListViewItem rowHP = new ListViewItem("HP");
-            rowHP.SubItems.Add((game.Player.HP + "/" + game.Player.MaxHP).ToString());
+            //rowHP.SubItems.Add((game.Player.HP + "/" + game.Player.MaxHP).ToString());
             ListViewItem rowLvl = new ListViewItem("Level");
             rowLvl.SubItems.Add(game.Player.Level.ToString());
             ListViewItem rowExp = new ListViewItem("Exp");
