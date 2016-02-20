@@ -10,54 +10,64 @@ namespace WindowsFormJam
     public class Player
     {
         private Game game;
-        public int HP { get; private set; }
-        public int MaxHP { get; private set; }
-        public int Level { get; protected set; }
 
+        public string Name { get; private set; }
+
+        public int Str { get; private set; }    //amount of dmg done
+        public int Dex { get; private set; }    //chances to hit
+        public int Agi { get; private set; }    //chances to get hit
+        public int Cons { get; private set; }   //max HP
+        public int Char { get; private set; }   //affect sell/buy price
+
+        public int currentHP { get; private set; }
+        //public int MaxHP { get; private set; }
+
+        public int Level { get; protected set; }
         public int CurrentExp { get;  set; }
         //public int NextExp { get; private set; }
+
         public int Gold { get; set; }
+        //public Weapon Weapon { get; private set; }    //equipement
 
         public int X { get; set; }
         public int Y { get; set; }
 
-        public Player(string path, Game _game)
+        public Player(string name, int ID, Game game)
         {
-            string[] data;
-            try
-            {
-                using (StreamReader reader = new StreamReader(path))
-                {
-                    data = reader.ReadToEnd().Split(';');
-                }
-                game = _game;
-                MaxHP = int.Parse(data[0]);
-                HP = MaxHP;
-                Level = int.Parse(data[1]);
-                CurrentExp = int.Parse(data[2]);
-                Gold = int.Parse(data[3]);
-            }
-            catch(Exception ex)
-            {
-                game = _game;
-                MaxHP = 20;
-                HP = 20;
-                Level = 1;
-                CurrentExp = 0;
-                Gold = 0;
-            }
+            Name = name;
+            this.game = game;
+        }
+
+        public Player(string name, int str, int dex, int agi, int cons, int charisma, Game game)
+        {
+            Name = name;
+
+            Str = str;
+            Dex = dex;
+            Agi = Agi;
+            Cons = cons;
+            Char = charisma;
+
+            currentHP = cons * 10;
+
+            Level = 1;
+            CurrentExp = 0;
+
+            Gold = 0;
+
+            this.game = game;
         }
 
         public void TakeDmg(int attack)
         {
-            HP -= attack;
+            currentHP -= attack;
 
-            if(HP <= 0)
+            if(currentHP <= 0)
             {
-                using (StreamWriter writer = new StreamWriter(AppDomain.CurrentDomain.BaseDirectory + "Char.csv"))
-                {
-                    writer.Write(this.toString());
-                }
+                //using (StreamWriter writer = new StreamWriter(AppDomain.CurrentDomain.BaseDirectory + "Char.csv"))
+                //{
+                //    writer.Write(this.toString());
+                //}
                 game.GameForm.DeathAnimation();
                 game.GameForm.game = new Game(game.GameForm);
                 
@@ -78,13 +88,13 @@ namespace WindowsFormJam
             }
         }
 
-        public void Spawn(string[] map)
+        public void Spawn(string[,] map)
         {
-            for (int i = 0; i < map.Length; i++)
+            for (int i = 0; i < map.GetLength(0); i++)
             {
-                for (int j = 0; j < map[i].Length; j++)
+                for (int j = 0; j < map.GetLength(1); j++)
                 {
-                    if (map[i][j] == 'c')
+                    if (map[i,j] == "c")
                     {
                         X = j;
                         Y = i;
@@ -93,9 +103,9 @@ namespace WindowsFormJam
             }
         }
 
-        public string toString()
-        {
-            return MaxHP.ToString() + ";" + Level.ToString() + ";" + CurrentExp.ToString() + ";" + Gold.ToString();
-        }
+        //public string toString()
+        //{
+        //    return MaxHP.ToString() + ";" + Level.ToString() + ";" + CurrentExp.ToString() + ";" + Gold.ToString();
+        //}
     }
 }

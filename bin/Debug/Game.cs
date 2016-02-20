@@ -17,29 +17,37 @@ namespace WindowsFormJam
         public frmGame GameForm { get; private set; }
         public Player Player { get; private set; }
         private string[] maps;
-        private string[] currentMap;
-        private List<Mob> mobs;
+        private string[,] currentMap;
+        private List<Mob> mobs = new List<Mob>();
         public int Floor { get; private set; }
         //private List<Item> itemList;
-        private SqlConnection conSql;
-        private SqlCommand cmdSql;
-        private SqlDataReader readerSql;
+        
 
         public Game(frmGame form)
         {
-            conSql = new SqlConnection("Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=|DataDirectory|\\Jam.mdf;Integrated Security=True");
-            bool t = ConnectionTest();
-            DataTable d = new DataTable();
-            d.Columns.Add("Name", typeof(string));
-            d = ExecCmd("SELECT Name, baseHP FROM Mobs", d);
-            object test = d.Rows[0]["Name"];
+            string pw = "allobaker";
+
+            byte[] data = System.Text.Encoding.ASCII.GetBytes(pw);
+            data = new System.Security.Cryptography.SHA256Managed().ComputeHash(data);
+            String hash = System.Text.Encoding.ASCII.GetString(data);
+
+            Player = new Player("a", this);
             GameForm = form;
-            Player = new Player(AppDomain.CurrentDomain.BaseDirectory + "Char.csv", this);
-            Floor = 1;
-            //LoadItems();
-            currentMap = LoadMap();
-            MobGeneration();
-            Player.Spawn(currentMap);
+            if (DB.ConnectionTest())
+            {
+                Floor = 1;
+                currentMap = LoadMap();
+                //MobGeneration();
+                //Player.Spawn(currentMap);
+            }
+            else
+            {
+                MessageBox.Show("Could not load game data.");
+            }
+
+            Maze m = new Maze(16,16);
+            m.Generation();
+            currentMap = m.GetMaze();
         }
 
         public Image Render()
@@ -64,12 +72,12 @@ namespace WindowsFormJam
                 {
                     for (int j = 0; j < NBTILE; j++)
                     {
-                        switch (currentMap[j][i])
+                        switch (currentMap[i,j])
                         {
-                            case 'w':
+                            case "w":
                                 g.FillRectangle(wall, new Rectangle(i * (frame.Width / NBTILE), j * (frame.Height / NBTILE), frame.Width / NBTILE, frame.Height / NBTILE));
                                 break;
-                            case 's':
+                            case "s":
                                 g.FillRectangle(stair, new Rectangle(i * (frame.Width / NBTILE), j * (frame.Height / NBTILE), frame.Width / NBTILE, frame.Height / NBTILE));
                                 break;
                             default:
@@ -116,9 +124,9 @@ namespace WindowsFormJam
             return frame;
         }
 
-        private string[] LoadMap()
+        private string[,] LoadMap()
         {
-            if (Floor == 1)
+            /*if (Floor == 1)
             {
                 maps = new string[File.ReadLines(frmGame.path + "map.txt").Count()];
                 int i = 0;
@@ -161,45 +169,63 @@ namespace WindowsFormJam
                             break;
                     }
                 }
+            }*/
+
+            string[,] map = new string[16, 16];
+            int[,] weight = new int[16, 16];
+            Random rng = new Random();
+            for (int i = 0; i < map.GetLength(0); i++)
+            {
+                for (int j = 0; j < map.GetLength(1); j++)
+                {
+                    map[i, j] = "w";
+                    weight[i, j] = rng.Next(1, 99);
+                }
             }
+
             return map;
         }
 
         public void MobGeneration()
         {
-            /*Random rng = new Random();
-            int nbMob = rng.Next(1, 5);
+            Random rng = new Random();
+            int nbMob = rng.Next(3, 10);
             mobs = new List<Mob>();
 
-            Mob mob;
+            string cmd = "SELECT * FROM Mobs WHERE minFloor <= " + Floor.ToString() + "AND maxFloor >= " + Floor.ToString();
+            DataTable dataTable = new DataTable();
+            DB.ExecCmd(cmd, dataTable);
+
             for (int i = 0; i < nbMob; i++)
             {
-                int mobId = rng.Next(0, mobList.Count);
-                mob = new Mob(mobList[mobId].Name, mobList[mobId].MaxHP, mobList[mobId].Attack, rng.Next(1, 15), rng.Next(1, 15), rng.Next(1,5), mobList[mobId].Exp, mobList[mobId].Gold);
-                bool spawn = false;
-                while (!spawn)
+                int mobId = rng.Next(0, dataTable.Rows.Count);
+                var mobData = dataTable.Rows[rng.Next(0, dataTable.Rows.Count)];
+                int cX = rng.Next(1,15);
+                int cY = rng.Next(1,15);
+                bool canSpawn = false;
+                while (!canSpawn)
                 {
-                    if (currentMap[mob.X][mob.Y] == 'f')
+                    cX = rng.Next(1, 15);
+                    cY = rng.Next(1, 15);
+                    if (currentMap[cX,cY] == "f")
                     {
-                        spawn = true;
+                        canSpawn = true;
                         for (int j = 0; j < mobs.Count; j++)
                         {
-                            if (mob.X == mobs[j].X && mob.Y == mobs[j].Y)
-                                spawn = false;
-                        }
+                            if (mobs[j].X == cX && mobs[j].Y == cY)
+                                canSpawn = false;
+                        } 
                     }
-                    mob = new Mob(mobList[mobId].Name, mobList[mobId].MaxHP, mobList[mobId].Attack, rng.Next(1, 15), rng.Next(1, 15), rng.Next(1, 5), mobList[mobId].Exp, mobList[mobId].Gold);
                 }
+                Mob mob = new Mob((string)mobData["Name"], 
+                    (int)mobData["baseHP"], 
+                    (int)mobData["baseAttack"], 
+                    cX, cY, 
+                    (int)mobData["minLevel"], 
+                    (int)mobData["baseExp"],
+                    (int)mobData["baseGold"]);
                 mobs.Add(mob);
-
-
-            }*/
-
-            Random rng = new Random();
-            int nbMob = rng.Next(1, 5);
-            mobs = new List<Mob>();
-
-
+            }
         }
 
         public void ItemGeneration()
@@ -226,34 +252,37 @@ namespace WindowsFormJam
                     newX--;
                     break;
             }
-            switch (currentMap[newY][newX])
+            if (newX >= 0 && newX < NBTILE && newY >= 0 && newY < NBTILE)
             {
-                case 's':
-                    Floor++;
-                    currentMap = LoadMap();
-                    MobGeneration();
-                    Player.Spawn(currentMap);
-                    break;
-                case 'f':
-                case 'c':
-                    int combat = -1;
-                    for (int i = 0; i < mobs.Count; i++)
-                    {
-                        if (mobs[i].X == newX && mobs[i].Y == newY)
+                switch (currentMap[newX, newY])
+                {
+                    case "s":
+                        Floor++;
+                        currentMap = LoadMap();
+                        MobGeneration();
+                        Player.Spawn(currentMap);
+                        break;
+                    case "f":
+                    case "c":
+                        int combat = -1;
+                        for (int i = 0; i < mobs.Count; i++)
                         {
-                            combat = i;
+                            if (mobs[i].X == newX && mobs[i].Y == newY)
+                            {
+                                combat = i;
+                            }
                         }
-                    }
-                    if (combat == -1)
-                    {
-                        Player.X = newX;
-                        Player.Y = newY;
-                    }
-                    else
-                    {
-                        Battle(mobs[combat]);
-                    }
-                    break;
+                        if (combat == -1)
+                        {
+                            Player.X = newX;
+                            Player.Y = newY;
+                        }
+                        else
+                        {
+                            Battle(mobs[combat]);
+                        }
+                        break;
+                }
             }
         }
 
@@ -272,51 +301,6 @@ namespace WindowsFormJam
             Graphics g = Graphics.FromImage(img);
             g.DrawImage(source, 0, 0, width, height);
             return img;
-        }
-
-        private bool ConnectionTest()
-        {
-            try
-            {
-                conSql.Open();
-                conSql.Close();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Can't connect to DB: " + ex.Message);
-                return false;
-            }
-            return true;
-        }
-
-        public DataTable ExecCmd(string cmd, DataTable data)
-        {
-            bool result = false;
-            cmdSql = new SqlCommand();
-
-            try
-            {
-                cmdSql.CommandText = cmd;
-                cmdSql.CommandType = CommandType.Text;
-                cmdSql.Connection = conSql;
-                conSql.Open();
-                readerSql = cmdSql.ExecuteReader();
-                data.Load(readerSql);
-
-                readerSql.Close();
-                result = true;
-            }
-            catch (Exception ex)
-            {
-                //MessageBox.Show("error ExecPsParams: " + ex.Message);
-                result = false;
-            }
-            finally
-            {
-                conSql.Close();
-            }
-            //return result;
-            return data;
         }
 
     }

@@ -18,9 +18,9 @@ namespace WindowsFormJam
         public int Attack { get; private set; }
         public int Gold { get; private set; }
 
-        public Mob(string Id, int baseHP, int attack, int x, int y, int lvl, int baseExp, int gold)
+        public Mob(string name, int baseHP, int attack, int x, int y, int lvl, int baseExp, int gold)
         {
-            Name = Id;
+            Name = name;
             X = x;
             Y = y;
             Level = lvl;
